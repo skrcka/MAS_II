@@ -1,9 +1,6 @@
 use rayon::prelude::{IntoParallelIterator, ParallelBridge, ParallelIterator};
 use rayon_hash::HashMap;
-use std::{
-    fs::write,
-    sync::{Arc, Mutex},
-};
+use std::fs::write;
 
 pub fn get_avg_dg_par(sparse_matrix: &HashMap<usize, HashMap<usize, usize>>) {
     let sparse_matrix_copy = sparse_matrix.clone();
@@ -38,7 +35,6 @@ pub fn get_max_dg_par(sparse_matrix: &HashMap<usize, HashMap<usize, usize>>) {
 }
 
 pub fn get_dg_dis_par(sparse_matrix: &HashMap<usize, HashMap<usize, usize>>) {
-    // Get degree distribution par
     let sparse_matrix_copy = sparse_matrix.clone();
     let start = std::time::Instant::now();
     let mut degree_distribution: HashMap<usize, usize> = HashMap::new();
@@ -213,7 +209,6 @@ pub fn get_cl_ds_par(sparse_matrix: &HashMap<usize, HashMap<usize, usize>>) {
 }
 
 pub fn get_avg_cm_nb_par(sparse_matrix: &HashMap<usize, HashMap<usize, usize>>) {
-    // Get average common neighbors par
     let sparse_matrix_copy = sparse_matrix.clone();
     let start = std::time::Instant::now();
     let sum: usize = sparse_matrix_copy
@@ -243,19 +238,17 @@ pub fn get_avg_cm_nb_par(sparse_matrix: &HashMap<usize, HashMap<usize, usize>>) 
 }
 
 pub fn get_max_cm_ng_par(sparse_matrix: &HashMap<usize, HashMap<usize, usize>>) {
-    // Get maximum common neighbors par
     let sparse_matrix_copy = sparse_matrix.clone();
+    let sparse_matrix_copy2 = sparse_matrix.clone();
     let start = std::time::Instant::now();
     let max = sparse_matrix_copy
         .into_par_iter()
         .map(|(_, neighbors)| {
             let mut count = 0;
             for neighbor in neighbors.keys() {
-                if !sparse_matrix.contains_key(neighbor) {
-                    continue;
-                }
-                for neighbor_neighbor in sparse_matrix.get(neighbor).unwrap().keys() {
-                    if neighbors.contains_key(neighbor_neighbor) {
+                for neighbor_neighbor in sparse_matrix_copy2.keys() {
+                    let n = sparse_matrix_copy2.get(neighbor_neighbor).unwrap();
+                    if n.contains_key(neighbor) {
                         count += 1;
                     }
                 }
