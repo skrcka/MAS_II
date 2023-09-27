@@ -1,6 +1,9 @@
 use rayon::prelude::{IntoParallelIterator, ParallelBridge, ParallelIterator};
 use rayon_hash::HashMap;
-use std::fs::write;
+use std::{
+    fs::write,
+    sync::{Arc, Mutex},
+};
 
 pub fn get_avg_dg_par(sparse_matrix: &HashMap<usize, HashMap<usize, usize>>) {
     let sparse_matrix_copy = sparse_matrix.clone();
@@ -123,15 +126,27 @@ fn get_cl_coef(sparse_matrix: &HashMap<usize, HashMap<usize, usize>>, node: usiz
 }
 
 pub fn get_cl_ef_dis_par(sparse_matrix: &HashMap<usize, HashMap<usize, usize>>) {
-    let mut distribution = HashMap::new();
+    let start = std::time::Instant::now();
+    let distribution = Arc::new(Mutex::new(HashMap::new()));
 
-    for node in sparse_matrix.keys() {
-        let coeff = get_cl_coef(sparse_matrix, *node);
-        distribution.insert(*node, coeff);
-    }
+    sparse_matrix.into_par_iter().for_each(|(&node, _)| {
+        let coeff = get_cl_coef(sparse_matrix, node);
+        let mut dist = distribution.lock().unwrap();
+        dist.insert(node, coeff);
+    });
 
-    let mut distribution_vec: Vec<(usize, f64)> =
-        distribution.into_iter().map(|(k, v)| (k, v)).collect();
+    let end = std::time::Instant::now();
+    println!(
+        "Clustering effect distribution par in {}",
+        (end - start).as_millis()
+    );
+
+    let mut distribution_vec: Vec<(usize, f64)> = Arc::try_unwrap(distribution)
+        .unwrap()
+        .into_inner()
+        .unwrap()
+        .into_iter()
+        .collect();
     distribution_vec.sort_by(|a, b| a.0.cmp(&b.0));
     write(
         "cls_distribution.txt",

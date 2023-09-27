@@ -94,6 +94,47 @@ pub fn get_cl_ds(sparse_matrix: &HashMap<usize, HashMap<usize, usize>>) {
     println!("Clustering distribution in {}", (end - start).as_millis());
 }
 
+fn get_cl_coef(sparse_matrix: &HashMap<usize, HashMap<usize, usize>>, node: usize) -> f64 {
+    let neighbors = match sparse_matrix.get(&node) {
+        Some(neigh) => neigh.keys().collect::<Vec<&usize>>(),
+        None => return 0.0, // node doesn't exist
+    };
+
+    if neighbors.len() < 2 {
+        return 0.0; // no way to form a triangle with less than 2 neighbors
+    }
+
+    let mut triangles = 0;
+    for i in 0..neighbors.len() {
+        for j in i + 1..neighbors.len() {
+            if let Some(inner) = sparse_matrix.get(neighbors[i]) {
+                if inner.contains_key(neighbors[j]) {
+                    triangles += 1;
+                }
+            }
+        }
+    }
+
+    let triples = neighbors.len() * (neighbors.len() - 1) / 2;
+    triangles as f64 / triples as f64
+}
+
+pub fn get_cl_ef_dis(sparse_matrix: &HashMap<usize, HashMap<usize, usize>>) {
+    let start = std::time::Instant::now();
+    let mut distribution = HashMap::new();
+
+    for node in sparse_matrix.keys() {
+        let coeff = get_cl_coef(sparse_matrix, *node);
+        distribution.insert(*node, coeff);
+    }
+
+    let end = std::time::Instant::now();
+    println!(
+        "Clustering effect distribution par in {}",
+        (end - start).as_millis()
+    );
+}
+
 pub fn get_avg_cm_nb(sparse_matrix: &HashMap<usize, HashMap<usize, usize>>) {
     let start = std::time::Instant::now();
     let mut sum = 0;

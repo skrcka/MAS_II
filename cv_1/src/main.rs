@@ -3,7 +3,8 @@ use std::fs::read_to_string;
 
 mod functions;
 use functions::{
-    get_avg_cm_nb, get_avg_dg, get_cl_ds, get_cl_ef, get_dg_dis, get_max_cm_ng, get_max_dg,
+    get_avg_cm_nb, get_avg_dg, get_cl_ds, get_cl_ef, get_cl_ef_dis, get_dg_dis, get_max_cm_ng,
+    get_max_dg,
 };
 mod functions_par;
 use functions_par::{
@@ -43,9 +44,12 @@ fn main() {
     get_dg_dis(&sparse_matrix);
     get_dg_dis_par(&sparse_matrix);
 
+    /*
     get_cl_ef(&sparse_matrix);
     get_cl_ef_par(&sparse_matrix);
+    */
 
+    get_cl_ef_dis(&sparse_matrix);
     get_cl_ef_dis_par(&sparse_matrix);
 
     get_cl_ds(&sparse_matrix);
