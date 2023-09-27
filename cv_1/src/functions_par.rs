@@ -97,6 +97,54 @@ pub fn get_cl_ef_par(sparse_matrix: &HashMap<usize, HashMap<usize, usize>>) {
     );
 }
 
+fn get_cl_coef(sparse_matrix: &HashMap<usize, HashMap<usize, usize>>, node: usize) -> f64 {
+    let neighbors = match sparse_matrix.get(&node) {
+        Some(neigh) => neigh.keys().collect::<Vec<&usize>>(),
+        None => return 0.0, // node doesn't exist
+    };
+
+    if neighbors.len() < 2 {
+        return 0.0; // no way to form a triangle with less than 2 neighbors
+    }
+
+    let mut triangles = 0;
+    for i in 0..neighbors.len() {
+        for j in i + 1..neighbors.len() {
+            if let Some(inner) = sparse_matrix.get(neighbors[i]) {
+                if inner.contains_key(neighbors[j]) {
+                    triangles += 1;
+                }
+            }
+        }
+    }
+
+    let triples = neighbors.len() * (neighbors.len() - 1) / 2;
+    triangles as f64 / triples as f64
+}
+
+pub fn get_cl_ef_dis_par(sparse_matrix: &HashMap<usize, HashMap<usize, usize>>) {
+    let mut distribution = HashMap::new();
+
+    for node in sparse_matrix.keys() {
+        let coeff = get_cl_coef(sparse_matrix, *node);
+        distribution.insert(*node, coeff);
+    }
+
+    let mut distribution_vec: Vec<(usize, f64)> =
+        distribution.into_iter().map(|(k, v)| (k, v)).collect();
+    distribution_vec.sort_by(|a, b| a.0.cmp(&b.0));
+    write(
+        "cls_distribution.txt",
+        distribution_vec
+            .iter()
+            .map(|(k, v)| format!("{} {}", k, v))
+            .collect::<Vec<String>>()
+            .join("\n")
+            .as_bytes(),
+    )
+    .unwrap();
+}
+
 pub fn get_cl_ds_par(sparse_matrix: &HashMap<usize, HashMap<usize, usize>>) {
     let start = std::time::Instant::now();
     let mut clustering_distribution: HashMap<usize, usize> = HashMap::new();
@@ -137,22 +185,6 @@ pub fn get_cl_ds_par(sparse_matrix: &HashMap<usize, HashMap<usize, usize>>) {
         "Clustering distribution par in {}",
         (end - start).as_millis()
     );
-
-    let mut cls_distribution_vec: Vec<(usize, usize)> = clustering_distribution
-        .into_iter()
-        .map(|(k, v)| (k, v))
-        .collect();
-    cls_distribution_vec.sort_by(|a, b| a.0.cmp(&b.0));
-    write(
-        "cls_distributions.txt",
-        cls_distribution_vec
-            .iter()
-            .map(|(k, v)| format!("{} {}", k, v))
-            .collect::<Vec<String>>()
-            .join("\n")
-            .as_bytes(),
-    )
-    .unwrap();
 }
 
 pub fn get_avg_cm_nb_par(sparse_matrix: &HashMap<usize, HashMap<usize, usize>>) {

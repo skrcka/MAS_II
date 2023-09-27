@@ -1,6 +1,5 @@
-use rayon::prelude::{IntoParallelIterator, ParallelBridge, ParallelIterator};
 use rayon_hash::HashMap;
-use std::fs::{read_to_string, write};
+use std::fs::read_to_string;
 
 mod functions;
 use functions::{
@@ -8,8 +7,8 @@ use functions::{
 };
 mod functions_par;
 use functions_par::{
-    get_avg_cm_nb_par, get_avg_dg_par, get_cl_ds_par, get_cl_ef_par, get_dg_dis_par,
-    get_max_cm_ng_par, get_max_dg_par,
+    get_avg_cm_nb_par, get_avg_dg_par, get_cl_ds_par, get_cl_ef_dis_par, get_cl_ef_par,
+    get_dg_dis_par, get_max_cm_ng_par, get_max_dg_par,
 };
 
 fn read_lines(filename: &str) -> Vec<String> {
@@ -46,6 +45,8 @@ fn main() {
 
     get_cl_ef(&sparse_matrix);
     get_cl_ef_par(&sparse_matrix);
+
+    get_cl_ef_dis_par(&sparse_matrix);
 
     get_cl_ds(&sparse_matrix);
     get_cl_ds_par(&sparse_matrix);
