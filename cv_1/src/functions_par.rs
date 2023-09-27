@@ -127,13 +127,29 @@ fn get_cl_coef(sparse_matrix: &HashMap<usize, HashMap<usize, usize>>, node: usiz
 
 pub fn get_cl_ef_dis_par(sparse_matrix: &HashMap<usize, HashMap<usize, usize>>) {
     let start = std::time::Instant::now();
-    let distribution = Arc::new(Mutex::new(HashMap::new()));
 
-    sparse_matrix.into_par_iter().for_each(|(&node, _)| {
-        let coeff = get_cl_coef(sparse_matrix, node);
-        let mut dist = distribution.lock().unwrap();
-        dist.insert(node, coeff);
-    });
+    let coefficients: HashMap<usize, f64> = sparse_matrix
+        .into_par_iter()
+        .map(|(&node, _)| (node, get_cl_coef(sparse_matrix, node)))
+        .collect();
+
+    let mut degree_to_coefficients: HashMap<usize, Vec<f64>> = HashMap::new();
+
+    for (node, coeff) in coefficients.iter() {
+        let degree = sparse_matrix[node].len();
+        degree_to_coefficients
+            .entry(degree)
+            .or_default()
+            .push(*coeff);
+    }
+
+    let mut distribution_vec: Vec<(usize, f64)> = degree_to_coefficients
+        .into_iter()
+        .map(|(degree, coeffs)| {
+            let avg_coeff = coeffs.iter().sum::<f64>() / coeffs.len() as f64;
+            (degree, avg_coeff)
+        })
+        .collect();
 
     let end = std::time::Instant::now();
     println!(
@@ -141,12 +157,6 @@ pub fn get_cl_ef_dis_par(sparse_matrix: &HashMap<usize, HashMap<usize, usize>>) 
         (end - start).as_millis()
     );
 
-    let mut distribution_vec: Vec<(usize, f64)> = Arc::try_unwrap(distribution)
-        .unwrap()
-        .into_inner()
-        .unwrap()
-        .into_iter()
-        .collect();
     distribution_vec.sort_by(|a, b| a.0.cmp(&b.0));
     write(
         "cls_distribution.txt",

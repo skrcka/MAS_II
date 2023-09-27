@@ -26,4 +26,4 @@
 
 ## Clustering effect
 
-![degree distribution](cls_distributions.png)
+![degree distribution](cls_distribution.png)

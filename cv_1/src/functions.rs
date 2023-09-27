@@ -97,11 +97,11 @@ pub fn get_cl_ds(sparse_matrix: &HashMap<usize, HashMap<usize, usize>>) {
 fn get_cl_coef(sparse_matrix: &HashMap<usize, HashMap<usize, usize>>, node: usize) -> f64 {
     let neighbors = match sparse_matrix.get(&node) {
         Some(neigh) => neigh.keys().collect::<Vec<&usize>>(),
-        None => return 0.0, // node doesn't exist
+        None => return 0.0,
     };
 
     if neighbors.len() < 2 {
-        return 0.0; // no way to form a triangle with less than 2 neighbors
+        return 0.0;
     }
 
     let mut triangles = 0;
@@ -121,16 +121,32 @@ fn get_cl_coef(sparse_matrix: &HashMap<usize, HashMap<usize, usize>>, node: usiz
 
 pub fn get_cl_ef_dis(sparse_matrix: &HashMap<usize, HashMap<usize, usize>>) {
     let start = std::time::Instant::now();
-    let mut distribution = HashMap::new();
+    let coefficients: HashMap<usize, f64> = sparse_matrix
+        .iter()
+        .map(|(&node, _)| (node, get_cl_coef(sparse_matrix, node)))
+        .collect();
 
-    for node in sparse_matrix.keys() {
-        let coeff = get_cl_coef(sparse_matrix, *node);
-        distribution.insert(*node, coeff);
+    let mut degree_to_coefficients: HashMap<usize, Vec<f64>> = HashMap::new();
+
+    for (node, coeff) in coefficients.iter() {
+        let degree = sparse_matrix[node].len();
+        degree_to_coefficients
+            .entry(degree)
+            .or_default()
+            .push(*coeff);
     }
+
+    let distribution_vec: Vec<(usize, f64)> = degree_to_coefficients
+        .into_iter()
+        .map(|(degree, coeffs)| {
+            let avg_coeff = coeffs.iter().sum::<f64>() / coeffs.len() as f64;
+            (degree, avg_coeff)
+        })
+        .collect();
 
     let end = std::time::Instant::now();
     println!(
-        "Clustering effect distribution par in {}",
+        "Clustering effect distribution in {}",
         (end - start).as_millis()
     );
 }

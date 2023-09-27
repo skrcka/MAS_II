@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 
 
 def main():
-    df = pd.read_csv('cls_distributions.txt', names=['distribution', 'count'], sep=' ', header=None)
+    df = pd.read_csv('cls_distribution.txt', names=['distribution', 'count'], sep=' ', header=None)
 
     plt.figure(figsize=(10, 6))
     plt.loglog(df['distribution'], df['count'], color='skyblue', marker='o', linestyle='None')
@@ -14,7 +14,7 @@ def main():
     plt.grid(axis='y', which='both', linestyle='--', linewidth=0.5)
     plt.xticks(rotation=45)
     plt.tight_layout()
-    plt.savefig('cls_distributions.png')
+    plt.savefig('cls_distribution.png')
 
 if __name__ == '__main__':
     main()
