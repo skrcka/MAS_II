@@ -52,7 +52,6 @@ pub fn get_dg_dis_par(sparse_matrix: &HashMap<usize, HashMap<usize, usize>>) {
     let end = std::time::Instant::now();
     println!("Degree distribution par in {}", (end - start).as_millis());
 
-    // write degree distribution to file
     let mut degree_distribution_vec: Vec<(usize, usize)> = degree_distribution
         .into_iter()
         .map(|(k, v)| (k, v))
@@ -133,12 +132,27 @@ pub fn get_cl_ds_par(sparse_matrix: &HashMap<usize, HashMap<usize, usize>>) {
                 .or_insert(v);
         }
     }
-
     let end = std::time::Instant::now();
     println!(
         "Clustering distribution par in {}",
         (end - start).as_millis()
     );
+
+    let mut cls_distribution_vec: Vec<(usize, usize)> = clustering_distribution
+        .into_iter()
+        .map(|(k, v)| (k, v))
+        .collect();
+    cls_distribution_vec.sort_by(|a, b| a.0.cmp(&b.0));
+    write(
+        "cls_distributions.txt",
+        cls_distribution_vec
+            .iter()
+            .map(|(k, v)| format!("{} {}", k, v))
+            .collect::<Vec<String>>()
+            .join("\n")
+            .as_bytes(),
+    )
+    .unwrap();
 }
 
 pub fn get_avg_cm_nb_par(sparse_matrix: &HashMap<usize, HashMap<usize, usize>>) {
