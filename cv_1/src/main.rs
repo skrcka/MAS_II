@@ -25,6 +25,20 @@ fn main() {
             .or_insert(1);
     }
 
+    // Get average degree
+    let start = std::time::Instant::now();
+    let mut sum = 0;
+    for (_, v) in sparse_matrix.iter() {
+        sum += v.len();
+    }
+    let avg_degree = sum as f64 / sparse_matrix.len() as f64;
+    let end = std::time::Instant::now();
+    println!(
+        "Average degree: {} in {}",
+        avg_degree,
+        (end - start).as_millis()
+    );
+
     // Get average degree par
     let sparse_matrix_copy = sparse_matrix.clone();
     let start = std::time::Instant::now();
@@ -40,21 +54,20 @@ fn main() {
         (end - start).as_millis()
     );
 
-    // Get average degree
-    /*
+    // Get max degree
     let start = std::time::Instant::now();
-    let mut sum = 0;
+    let mut max_degree = 0;
     for (_, v) in sparse_matrix.iter() {
-        sum += v.len();
+        if v.len() > max_degree {
+            max_degree = v.len();
+        }
     }
-    let avg_degree = sum as f64 / sparse_matrix.len() as f64;
     let end = std::time::Instant::now();
     println!(
-        "Average degree: {} in {}",
-        avg_degree,
+        "Max degree: {} in {}",
+        max_degree,
         (end - start).as_millis()
     );
-    */
 
     // Get max degree par
     let sparse_matrix_copy = sparse_matrix.clone();
@@ -71,22 +84,17 @@ fn main() {
         (end - start).as_millis()
     );
 
-    // Get max degree
-    /*
+    // Get degree distribution
     let start = std::time::Instant::now();
-    let mut max_degree = 0;
+    let mut degree_distribution: HashMap<usize, usize> = HashMap::new();
     for (_, v) in sparse_matrix.iter() {
-        if v.len() > max_degree {
-            max_degree = v.len();
-        }
+        degree_distribution
+            .entry(v.len())
+            .and_modify(|e| *e += 1)
+            .or_insert(1);
     }
     let end = std::time::Instant::now();
-    println!(
-        "Max degree: {} in {}",
-        max_degree,
-        (end - start).as_millis()
-    );
-    */
+    println!("Degree distribution in {}", (end - start).as_millis());
 
     // Get degree distribution par
     let sparse_matrix_copy = sparse_matrix.clone();
@@ -122,19 +130,30 @@ fn main() {
     )
     .unwrap();
 
-    /*
-    // Get degree distribution
+    // Get clustering effect
     let start = std::time::Instant::now();
-    let mut degree_distribution: HashMap<usize, usize> = HashMap::new();
-    for (_, v) in sparse_matrix.iter() {
-        degree_distribution
-            .entry(v.len())
-            .and_modify(|e| *e += 1)
-            .or_insert(1);
+    let mut sum = 0;
+    for (_, neighbors) in sparse_matrix.iter() {
+        let mut count = 0;
+        for neighbor in neighbors.keys() {
+            if !sparse_matrix.contains_key(neighbor) {
+                continue;
+            }
+            for neighbor_neighbor in sparse_matrix.get(neighbor).unwrap().keys() {
+                if neighbors.contains_key(neighbor_neighbor) {
+                    count += 1;
+                }
+            }
+        }
+        sum += count;
     }
+    let clustering_effect = sum as f64 / sparse_matrix.len() as f64;
     let end = std::time::Instant::now();
-    println!("Degree distribution in {}", (end - start).as_millis());
-    */
+    println!(
+        "Clustering effect: {} in {}",
+        clustering_effect,
+        (end - start).as_millis()
+    );
 
     // Get clustering effect par
     let sparse_matrix_copy = sparse_matrix.clone();
@@ -160,10 +179,9 @@ fn main() {
         (end - start).as_millis()
     );
 
-    // Get clustering effect
-    /*
+    // Get clustering distribution
     let start = std::time::Instant::now();
-    let mut sum = 0;
+    let mut clustering_distribution: HashMap<usize, usize> = HashMap::new();
     for (_, neighbors) in sparse_matrix.iter() {
         let mut count = 0;
         for neighbor in neighbors.keys() {
@@ -176,16 +194,13 @@ fn main() {
                 }
             }
         }
-        sum += count;
+        clustering_distribution
+            .entry(count)
+            .and_modify(|e| *e += 1)
+            .or_insert(1);
     }
-    let clustering_effect = sum as f64 / sparse_matrix.len() as f64;
     let end = std::time::Instant::now();
-    println!(
-        "Clustering effect: {} in {}",
-        clustering_effect,
-        (end - start).as_millis()
-    );
-     */
+    println!("Clustering distribution in {}", (end - start).as_millis());
 
     // Get clustering distribution par
     let sparse_matrix_copy = sparse_matrix.clone();
@@ -215,10 +230,9 @@ fn main() {
         (end - start).as_millis()
     );
 
-    /*
-    // Get clustering distribution
+    // Get average common neighbors
     let start = std::time::Instant::now();
-    let mut clustering_distribution: HashMap<usize, usize> = HashMap::new();
+    let mut sum = 0;
     for (_, neighbors) in sparse_matrix.iter() {
         let mut count = 0;
         for neighbor in neighbors.keys() {
@@ -231,14 +245,15 @@ fn main() {
                 }
             }
         }
-        clustering_distribution
-            .entry(count)
-            .and_modify(|e| *e += 1)
-            .or_insert(1);
+        sum += count;
     }
+    let avg_common_neighbors = sum as f64 / sparse_matrix.len() as f64;
     let end = std::time::Instant::now();
-    println!("Clustering distribution in {}", (end - start).as_millis());
-    */
+    println!(
+        "Average common neighbors: {} in {}",
+        avg_common_neighbors,
+        (end - start).as_millis()
+    );
 
     // Get average common neighbors par
     let sparse_matrix_copy = sparse_matrix.clone();
@@ -268,10 +283,9 @@ fn main() {
         (end - start).as_millis()
     );
 
-    // Get average common neighbors
-    /*
+    // Get maximum common neighbors
     let start = std::time::Instant::now();
-    let mut sum = 0;
+    let mut max = 0;
     for (_, neighbors) in sparse_matrix.iter() {
         let mut count = 0;
         for neighbor in neighbors.keys() {
@@ -284,16 +298,16 @@ fn main() {
                 }
             }
         }
-        sum += count;
+        if count > max {
+            max = count;
+        }
     }
-    let avg_common_neighbors = sum as f64 / sparse_matrix.len() as f64;
     let end = std::time::Instant::now();
     println!(
-        "Average common neighbors: {} in {}",
-        avg_common_neighbors,
+        "Maximum common neighbors: {} in {}",
+        max,
         (end - start).as_millis()
     );
-     */
 
     // Get maximum common neighbors par
     let sparse_matrix_copy = sparse_matrix.clone();
@@ -322,34 +336,6 @@ fn main() {
         max,
         (end - start).as_millis()
     );
-
-    // Get maximum common neighbors
-    /*
-    let start = std::time::Instant::now();
-    let mut max = 0;
-    for (_, neighbors) in sparse_matrix.iter() {
-        let mut count = 0;
-        for neighbor in neighbors.keys() {
-            if !sparse_matrix.contains_key(neighbor) {
-                continue;
-            }
-            for neighbor_neighbor in sparse_matrix.get(neighbor).unwrap().keys() {
-                if neighbors.contains_key(neighbor_neighbor) {
-                    count += 1;
-                }
-            }
-        }
-        if count > max {
-            max = count;
-        }
-    }
-    let end = std::time::Instant::now();
-    println!(
-        "Maximum common neighbors: {} in {}",
-        max,
-        (end - start).as_millis()
-    );
-    */
 }
 
 /*
