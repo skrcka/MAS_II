@@ -4,19 +4,16 @@ from itertools import combinations
 
 
 def non_edges(graph):
-    """Return a list of non-edges in the graph."""
     return [(u, v) for u, v in combinations(graph.nodes(), 2) if not graph.has_edge(u, v)]
 
 
 def common_neighbors(G, x, y):
-    """Return the common neighbors of nodes x and y."""
     nx_neighbors = set(G.neighbors(x))
     ny_neighbors = set(G.neighbors(y))
     return len(nx_neighbors & ny_neighbors)
 
 
 def jaccard_coefficient(G, x, y):
-    """Return the Jaccard coefficient of nodes x and y."""
     nx_neighbors = set(G.neighbors(x))
     ny_neighbors = set(G.neighbors(y))
     intersection = nx_neighbors & ny_neighbors
@@ -27,7 +24,6 @@ def jaccard_coefficient(G, x, y):
 
 
 def main():
-    # K-fold cross-validation
     G = nx.karate_club_graph()
     K = 10
     edges = list(G.edges())
