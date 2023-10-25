@@ -116,25 +116,43 @@ fn compute_weighted_clustering_coefficient(matrix: &HashMap<usize, HashMap<usize
     total_coefficient / matrix.len() as f64
 }
 
-fn highest_avg_weight_simplex(
+fn aggregate_weights(
     data: &HashMap<u32, HashMap<usize, HashMap<usize, usize>>>,
-) -> (usize, usize, f64) {
-    let mut max_avg_weight = 0.0;
-    let mut max_simplex = (0, 0);
+) -> HashMap<usize, HashMap<usize, usize>> {
+    let mut aggregate: HashMap<usize, HashMap<usize, usize>> = HashMap::new();
 
-    for matrix in data.values() {
-        for (&author1, links) in matrix {
-            let total_weight: usize = links.values().sum();
-            let avg_weight = total_weight as f64 / links.len() as f64;
-
-            if avg_weight > max_avg_weight {
-                max_avg_weight = avg_weight;
-                max_simplex = (author1, *links.keys().next().unwrap_or(&0));
+    for year_data in data.values() {
+        for (&author1, author_data) in year_data.iter() {
+            let author1_entry = aggregate.entry(author1).or_insert_with(HashMap::new);
+            for (&author2, &weight) in author_data.iter() {
+                *author1_entry.entry(author2).or_insert(0) += weight;
             }
         }
     }
 
-    (max_simplex.0, max_simplex.1, max_avg_weight)
+    aggregate
+}
+
+fn find_max_average_weight_authors(
+    aggregate: &HashMap<usize, HashMap<usize, usize>>,
+) -> (usize, usize, f64) {
+    let mut max_average = 0.0;
+    let mut max_author1 = 0;
+    let mut max_author2 = 0;
+
+    for (&author1, author_data) in aggregate.iter() {
+        for (&author2, &weight) in author_data.iter() {
+            let average = weight as f64 / aggregate.len() as f64;
+
+            if average > max_average {
+                max_average = average;
+                max_author1 = author1;
+                max_author2 = author2;
+            }
+        }
+    }
+
+    (max_author1, max_author2, max_average)
 }
 
 pub fn cv_2() {
@@ -145,6 +163,10 @@ pub fn cv_2() {
             "coauth-DBLP-times.txt",
         );
 
-    let degrees_over_time = compute_degrees_and_weighted_clustering(&sparse_matrices);
-    let (author1, author2, avg_weight) = highest_avg_weight_simplex(&sparse_matrices);
+    let mut degrees_over_time = compute_degrees_and_weighted_clustering(&sparse_matrices);
+    println!("{:?}", degrees_over_time.remove(&2010));
+
+    let aggregate = aggregate_weights(&sparse_matrices);
+    let (author1, author2, average) = find_max_average_weight_authors(&aggregate);
+    println!("Author1: {}, Author2: {}", author1, author2);
 }
