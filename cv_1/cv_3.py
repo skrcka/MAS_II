@@ -24,7 +24,7 @@ def jaccard_coefficient(G, x, y):
 
 
 def main():
-    G = nx.karate_club_graph()
+    G = nx.les_miserables_graph()
     K = 10
     edges = list(G.edges())
     random.shuffle(edges)

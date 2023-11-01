@@ -5,6 +5,7 @@ import random
 
 def random_walk(node: int, steps: int, multilayer_network: dict[int, dict[int, set[int]]]) -> int:
     current_node = node
+    visited = []
     for _ in range(steps):
         layers = [layer for layer in multilayer_network if current_node in multilayer_network[layer]]
         if not layers:
@@ -13,15 +14,18 @@ def random_walk(node: int, steps: int, multilayer_network: dict[int, dict[int, s
         neighbors = list(multilayer_network[layer][current_node])
         if not neighbors:
             break
+        visited.append(current_node)
         current_node = random.choice(neighbors)
-    return current_node
+    return current_node, visited
 
 
 def occupation_centrality(a: int, steps: int, trials: int, multilayer_network: dict[int, dict[int, set[int]]]) -> float:
     count = 0
     for _ in range(trials):
-        if random_walk(a, steps, multilayer_network) == a:
-            count += 1
+        a, visited = random_walk(a, steps, multilayer_network)
+        for node in visited:
+            if node == a:
+                count += 1
     return count / trials
 
 
