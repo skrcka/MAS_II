@@ -30,7 +30,7 @@ def main():
     for step, influenced in enumerate(simulate_influence_spread(G, steps=10)):
         plt.figure()
         nx.draw(
-            G, with_labels=True, font_size=5, node_color=['blue' if node in influenced else 'red' for node in G.nodes()]
+            G, with_labels=True, font_size=5, node_color=['red' if node in influenced else 'green' for node in G.nodes()]
         )
         #plt.savefig(f"step_{step}.png")  # Saves the figure to a file
         #plt.close()
