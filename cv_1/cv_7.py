@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 
 def simulate_influence_spread(
     graph, *, initial_nodes: list[str] | str | None = None, steps: int = 500, probability: int = 0.5
-):
+) -> list[str]:
     if initial_nodes is None:
         initial_nodes = random.choice(list(graph.nodes()))
     if not isinstance(initial_nodes, list):
@@ -24,7 +24,7 @@ def simulate_influence_spread(
         yield influenced_nodes
 
 
-def main():
+def main() -> None:
     G = nx.les_miserables_graph()
 
     for step, influenced in enumerate(simulate_influence_spread(G, steps=10)):
