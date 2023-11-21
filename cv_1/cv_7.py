@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 
 
 def simulate_influence_spread(
-    graph, *, initial_nodes: list[str] | str | None = None, steps: int = 500, probability: int = 0.5
+    graph: nx.Graph, *, initial_nodes: list[str] | str | None = None, steps: int = 500, probability: int = 0.5
 ) -> list[str]:
     if initial_nodes is None:
         initial_nodes = random.choice(list(graph.nodes()))
